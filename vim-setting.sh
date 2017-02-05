@@ -1,4 +1,4 @@
-OS=$1
+OS=$(uname)
 
 #.0 CHECK DEPENDENCIES
 
@@ -26,7 +26,7 @@ $INSTALL_COMMAND
 #.2 CHECK USERS
 # TODO : add detail option
 
-USERS=("${@:2}")
+USERS=("${@:1}")
 
 if [ -z "$USERS" ]
 then
@@ -44,6 +44,22 @@ F_USER="$USERS"
 
 #.3 FIND DIRECTORY about F_USER
 
+function get_home_directory() {
+	IFS=$'\n'
+	set -f
+	local PATHS="$(sudo cat /etc/passwd | grep "$1:")"
+	for PATH in $PATHS; do
+		IFS=$':'
+		local TEMP=($PATH)
+		if [ $1 = ${TEMP[0]} ]
+		then
+			eval "$2=${TEMP[5]}"
+		fi
+	done
+	set +f
+	IFS=$' '
+}
+
 HOME_PATH=""
 VIM_PATH=""
 VIMRC_PATH=""
@@ -53,43 +69,33 @@ then
 	HOME_PATH=$HOME
 else 
 	# GETTING PATH FROM /etc/passwd
-
-	IFS=$'\n'
-	set -f
-	PATHS="$(sudo cat /etc/passwd | grep "$F_USER:")"
-	for PATH in $PATHS; do
-		IFS=$':'
-		TEMP=($PATH)
-		if [ $F_USER = ${TEMP[0]} ]
-		then
-			HOME_PATH=${TEMP[5]}
-		fi
-	done
+	get_home_directory "$F_USER" HOME_PATH
 fi
-
-echo $HOME_PATH
-
-
-exit
-
 
 VIM_PATH=$HOME_PATH"/.vim"
 VIMRC_PATH=$HOME_PATH"/.vimrc"
 
+echo $VIMRC_PATH
 #.4 SET VIMRC
 
-rm $VIMRC_PATH
-touch $VIMRC_PATH
+/bin/rm "$VIMRC_PATH"
+#/bin/touch "$VIMRC_PATH"
 
 TAB_WIDTH="2"
 GLOBAL_PROPERTY=("syntax on" "set number")
 BASIC_PROPERTY=("set cindent expandtab sw=2 sts=2")
-BASIC_PROPERTIES=("au BufNewFile,BufReadPost *.c $BASIC_PROPERTY" "au BufNewFile,BufReadPost *.cpp $BASIC_PROPERTY" "au BufNewFile,BufReadPost *.h $BASIC_PROPERTY" "au BufNewFile,BufReadPost *.hpp $BASIC_PROPERTY")
+CONDITIONAL_PROPERTIES[0]="au BufNewFile,BufReadPost *.c"
+CONDITIONAL_PROPERTIES[1]="au BufNewFile,BufReadPost *.cpp"
+CONDITIONAL_PROPERTIES[2]="au BufNewFile,BufReadPost *.h" 
+CONDITIONAL_PROPERTIES[3]="au BufNewFile,BufReadPost *.hpp"
 
-echo GLOBAL_PROPERTY >> $VIMRC_PATH
 
-for property in $(BASIC_PROPERTIES); do
-	echo $property >> $VIMRC_PATH
+for property in "${GLOBAL_PROPERTY[@]}"; do
+	echo "$property" >> $VIMRC_PATH
+done
+
+for property in "${CONDITIONAL_PROPERTIES[@]}"; do
+	echo "$property$BASIC_PROPERTY" >> $VIMRC_PATH
 done
 
 #.5 SET VIM PLUGINS
