@@ -11,7 +11,7 @@ then
 	exit
 elif [ $OS = "Linux" ]
 then
-	INSTALL_COMMAND="sudo apt-get install vim -y"
+	INSTALL_COMMAND=""
 elif [ $OS = "Darwin" ]
 then
 	echo "No need to install vim on mac"
