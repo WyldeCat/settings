@@ -7,7 +7,7 @@ OS=$(uname)
 INSTALL_COMMAND=""
 if [ -z $OS ]
 then
-	echo "err: Need argument"
+	echo "err: Can't find OS"
 	exit
 elif [ $OS = "Linux" ]
 then
