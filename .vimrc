@@ -1,3 +1,5 @@
+execute pathogen#infect()
+
 function! ResCur()
 	if line("'\"") <= line("$")
 		normal! g`"
