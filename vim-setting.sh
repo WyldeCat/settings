@@ -1,3 +1,5 @@
+exit
+
 OS=$(uname)
 
 #.0 CHECK DEPENDENCIES
