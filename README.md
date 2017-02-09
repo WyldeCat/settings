@@ -1,2 +1,2 @@
 # settings
-Repo for settings
+Repo for vim settings
